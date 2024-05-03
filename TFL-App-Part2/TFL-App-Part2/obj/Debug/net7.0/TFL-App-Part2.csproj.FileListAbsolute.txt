@@ -1,0 +1,15 @@
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\bin\Debug\net7.0\TFL-App-Part2.exe
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\bin\Debug\net7.0\TFL-App-Part2.deps.json
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\bin\Debug\net7.0\TFL-App-Part2.runtimeconfig.json
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\bin\Debug\net7.0\TFL-App-Part2.dll
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\bin\Debug\net7.0\TFL-App-Part2.pdb
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.AssemblyInfoInputs.cache
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.AssemblyInfo.cs
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.csproj.CoreCompileInputs.cache
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.sourcelink.json
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.dll
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\refint\TFL-App-Part2.dll
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.pdb
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\TFL-App-Part2.genruntimeconfig.cache
+C:\Users\jasly\Documents\Uni\DSA CWK 2\TFL-App-Part2\TFL-App-Part2\obj\Debug\net7.0\ref\TFL-App-Part2.dll

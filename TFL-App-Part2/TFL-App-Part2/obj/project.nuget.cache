@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "FRyRipBRXWEColdvEQsQh4qsV4bQTUckLznCU+hUfoNSjemnlVADzCobHE3kQZo3Fi16Ks3Sn9Qu/saQtq6pUA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\jasly\\Documents\\Uni\\DSA CWK 2\\TFL-App-Part2\\TFL-App-Part2\\TFL-App-Part2.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jasly\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\7.0.15\\microsoft.windowsdesktop.app.ref.7.0.15.nupkg.sha512",
+    "C:\\Users\\jasly\\.nuget\\packages\\microsoft.netcore.app.ref\\7.0.15\\microsoft.netcore.app.ref.7.0.15.nupkg.sha512",
+    "C:\\Users\\jasly\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\7.0.15\\microsoft.aspnetcore.app.ref.7.0.15.nupkg.sha512",
+    "C:\\Users\\jasly\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\7.0.15\\microsoft.netcore.app.host.win-x64.7.0.15.nupkg.sha512"
+  ],
+  "logs": []
+}
