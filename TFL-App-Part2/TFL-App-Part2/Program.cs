@@ -21,7 +21,7 @@ class Program
         }
         return "";
     }
-    private static void PrintPath(int[] parent, int destination, List<string> stationNames, List<List<string>> stationLines, int[,] minutesMatrix, int[,] problemsMatrix)
+    private static void PrintPath(int[] parent, int destination, List<string> stationNames, List<List<string>> stationLines, List<List<int>> minutesMatrix, List<List<int>> problemsMatrix)
     {
         //build the path using a Stack (LIFO)
         Stack<int> path = new Stack<int>();
@@ -39,7 +39,12 @@ class Program
 
         string nextStationName = stationNames[path.Peek()];
         string commonLine = GetCommonLine(stationLines[current], stationLines[path.Peek()]);
+        //Get Station Name at Index in List
         string stationName = stationNames[current];
+
+        //Debug
+        /*string stationNameTest = stationNames[0];
+        Console.WriteLine($"TEST: Station 1: {stationNameTest}");*/
 
         Console.WriteLine($"({printCount}) Start: {stationName} ({commonLine})");
         printCount++;
@@ -58,7 +63,7 @@ class Program
                 int nextStationIndex = path.Pop();
                 nextStationName = stationNames[nextStationIndex];
                 commonLine = GetCommonLine(stationLines[stationIndex], stationLines[nextStationIndex]);
-                int minutes = minutesMatrix[stationIndex, nextStationIndex] + problemsMatrix[stationIndex, nextStationIndex];
+                int minutes = minutesMatrix[stationIndex][nextStationIndex] + problemsMatrix[stationIndex][nextStationIndex];
                 minutesCount += minutes;
 
                 if (!commonLine.Equals(latestLine))
@@ -95,15 +100,13 @@ class Program
         return minIndex;
     }
 
-    public static void Dijkstra(int[,] minutesMatrix, int[,] problemsMatrix, List<string> stationNames, List<List<string>> stationLines, int sourceStation, int destinationStation)
+    public static void Dijkstra(List<List<int>> minutesMatrix, List<List<int>> problemsMatrix, List<string> stationNames, List<List<string>> stationLines, int sourceStation, int destinationStation)
     {
-        Dictionary<string, int> stations = new Dictionary<string, int>();
-        for (int i = 0; i < stationNames.Count; i++)
+        int numVertices = 0;
+        foreach (var row in minutesMatrix)
         {
-            stations.Add(stationNames[i], i);
+            numVertices++;
         }
-
-        int numVertices = stations.Count;
 
         int[] distances = new int[numVertices];
         bool[] visited = new bool[numVertices];
@@ -114,6 +117,7 @@ class Program
             distances[i] = int.MaxValue;
             visited[i] = false;
             parent[i] = -1;
+            //Console.WriteLine($"distances[destinationStation]: {distances[destinationStation]}"); //Debug
         }
 
         distances[sourceStation] = 0;
@@ -125,18 +129,20 @@ class Program
 
             for (int v = 0; v < numVertices; v++)
             {
-                if (!visited[v] && minutesMatrix[u, v] != -1 && problemsMatrix[u, v] != -1 && (distances[u] + minutesMatrix[u, v] + problemsMatrix[u, v]) < distances[v])
+                if (!visited[v] && minutesMatrix[u][v] != -1 && problemsMatrix[u][v] != -1 && (distances[u] + minutesMatrix[u][v] + problemsMatrix[u][v]) < distances[v])
                 {
-                    distances[v] = distances[u] + minutesMatrix[u, v] + problemsMatrix[u, v];
+                    distances[v] = distances[u] + minutesMatrix[u][v] + problemsMatrix[u][v];
                     parent[v] = u;
                 }
             }
         }
+        Console.WriteLine($"distances[destinationStation]: {distances[destinationStation]}"); //Debug
 
-        Console.WriteLine($"Route: {sourceStation} to {destinationStation}");
+        Console.WriteLine($"Route: {stationNames[sourceStation]} to {stationNames[destinationStation]}");
 
         if (distances[destinationStation] == int.MaxValue)
         {
+            Console.WriteLine($"distances[destinationStation]: {distances[destinationStation]}"); //Debug
             Console.WriteLine("No path exists.");
         }
         else
@@ -146,56 +152,41 @@ class Program
     }
     public static void Main()
     {
-        //Matrx creation
-        int[,] adjMatrix = new int[63, 63];
+        //Matrix creation
+        List<List<int>> adjMatrix = new List<List<int>>();
         for (int x = 0; x < 63; x++)
         {
-            for (int y = 0; y < 63; y++)
-            {
-                adjMatrix[x, y] = -1;
-            }
+            adjMatrix.Add(new List<int>(Enumerable.Repeat(-1, 63)));
         }
+
         //Assign weights
-        adjMatrix[0, 35] = 9;
-        adjMatrix[10, 22] = 10;
-        adjMatrix[11, 23] = 5;
-        adjMatrix[12, 24] = 6;
-        adjMatrix[13, 25] = 7;
-        adjMatrix[14, 26] = 8;
-        adjMatrix[15, 27] = 9;
-        adjMatrix[2, 6] = 5;
-        adjMatrix[3, 7] = 4;
-        adjMatrix[4, 8] = 40;
-        adjMatrix[15, 9] = 10;
-        adjMatrix[2, 10] = 11;
-        adjMatrix[3, 15] = 5;
-        adjMatrix[34, 27] = 10;
-        adjMatrix[25, 25] = 20;
-        adjMatrix[37, 48] = 30;
-        adjMatrix[3, 38] = 10;
+        adjMatrix[0][35] = 9;
+        adjMatrix[10][22] = 10;
+        adjMatrix[11][23] = 5;
+        adjMatrix[12][24] = 6;
+        adjMatrix[13][25] = 7;
+        adjMatrix[14][26] = 8;
+        adjMatrix[15][27] = 9;
+        adjMatrix[2][6] = 5;
+        adjMatrix[3][7] = 4;
+        adjMatrix[4][8] = 40;
+        adjMatrix[15][9] = 10;
+        adjMatrix[2][10] = 11;
+        adjMatrix[3][15] = 5;
+        adjMatrix[34][27] = 10;
+        adjMatrix[25][25] = 20;
+        adjMatrix[37][48] = 30;
+        adjMatrix[3][38] = 10;
 
 
 
         //Problems Matrix
-        int[,] problemsMatrix = new int[63, 63];
-
+        List<List<int>> problemsMatrix = new List<List<int>>();
         for (int x = 0; x < 63; x++)
         {
-            for (int y = 0; y < 63; y++)
-            {
-                problemsMatrix[x, y] = 0;
-            }
+            problemsMatrix.Add(new List<int>(Enumerable.Repeat(0, 63)));
         }
 
-        //Debug only
-        /*for (int y = 0; y < 63; y++)
-        {
-            for (int x = 0; x < 63; x++)
-            {
-                Console.Write(adjMatrix[x, y]);
-            }
-            Console.WriteLine();
-        }*/
 
         List<string> stationNames = new List<string>
         {
@@ -365,7 +356,7 @@ class Program
                         {
                             for (int y = 0; y < 63; y++)
                             {
-                                if (problemsMatrix[x, y] == -1)
+                                if (problemsMatrix[x][y] == -1)
                                 {
                                     String station1 = stationNames[x];
                                     String station2 = stationNames[y];
@@ -386,13 +377,13 @@ class Program
                         {
                             for (int y = 0; y < 63; y++)
                             {
-                                if (problemsMatrix[x, y] > 0)
+                                if (problemsMatrix[x][y] > 0)
                                 {
                                     String station1 = stationNames[x];
                                     String station2 = stationNames[y];
                                     String commonLine = GetCommonLine(stationLines[x], stationLines[y]);
-                                    int oldTime = adjMatrix[x, y];
-                                    int newTime = oldTime + problemsMatrix[x, y];
+                                    int oldTime = adjMatrix[x][y];
+                                    int newTime = oldTime + problemsMatrix[x][y];
                                     Console.WriteLine($"{commonLine} Line: {station1} - {station2} : {oldTime} min now {newTime} min");
                                 }
                             }
@@ -417,8 +408,8 @@ class Program
                         }
                         Console.WriteLine("Please enter delay amount in minutes:");
                         int delay = Convert.ToInt32(Console.ReadLine());
-                        problemsMatrix[source, destination] = delay;
-                        problemsMatrix[destination, source] = delay;
+                        problemsMatrix[source][destination] = delay;
+                        problemsMatrix[destination][source] = delay;
                         Console.WriteLine("Delay added!");
                         Console.WriteLine("");
                     }
@@ -438,8 +429,8 @@ class Program
                             Console.WriteLine("INVALID INPUT: Station not found!");
                             continue;
                         }
-                        problemsMatrix[source, destination] = 0;
-                        problemsMatrix[destination, source] = 0;
+                        problemsMatrix[source][destination] = 0;
+                        problemsMatrix[destination][source] = 0;
                         Console.WriteLine("Delay removed!");
                         Console.WriteLine("");
 
@@ -460,8 +451,8 @@ class Program
                             Console.WriteLine("INVALID INPUT: Station not found!");
                             continue;
                         }
-                        problemsMatrix[source, destination] = -1;
-                        problemsMatrix[destination, source] = -1;
+                        problemsMatrix[source][destination] = -1;
+                        problemsMatrix[destination][source] = -1;
                         Console.WriteLine("Route Closed!");
                         Console.WriteLine("");
 
@@ -484,8 +475,8 @@ class Program
                             Console.WriteLine("INVALID INPUT: Station not found!");
                             continue;
                         }
-                        problemsMatrix[source, destination] = 0;
-                        problemsMatrix[destination, source] = 0;
+                        problemsMatrix[source][destination] = 0;
+                        problemsMatrix[destination][source] = 0;
                         Console.WriteLine("Route Opened!");
                         Console.WriteLine("");
 
@@ -509,6 +500,7 @@ class Program
                     {
                         Console.WriteLine("Please enter starting station name:");
                         int source = GetStationIndex(Console.ReadLine(), stationNames);
+                        Console.WriteLine($"Source Index: {source}"); //Debug
                         if (source == -1)
                         {
                             Console.WriteLine("INVALID INPUT: Station not found!");
@@ -516,6 +508,7 @@ class Program
                         }
                         Console.WriteLine("Please enter destination station name:");
                         int destination = GetStationIndex(Console.ReadLine(), stationNames);
+                        Console.WriteLine($"Destination Index: {destination}"); //Debug
                         if (destination == -1)
                         {
                             Console.WriteLine("INVALID INPUT: Station not found!");
