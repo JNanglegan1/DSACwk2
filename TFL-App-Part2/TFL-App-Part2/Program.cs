@@ -729,7 +729,7 @@ class Program
                     {
                         Console.WriteLine("Please enter starting station name:");
                         int source = GetStationIndex(Console.ReadLine(), stationNames);
-                        Console.WriteLine($"Source Index: {source}"); //Debug
+                        //Console.WriteLine($"Source Index: {source}"); //Debug
                         if (source == -1)
                         {
                             Console.WriteLine("INVALID INPUT: Station not found!");
@@ -737,7 +737,7 @@ class Program
                         }
                         Console.WriteLine("Please enter destination station name:");
                         int destination = GetStationIndex(Console.ReadLine(), stationNames);
-                        Console.WriteLine($"Destination Index: {destination}"); //Debug
+                        //Console.WriteLine($"Destination Index: {destination}"); //Debug
                         if (destination == -1)
                         {
                             Console.WriteLine("INVALID INPUT: Station not found!");
