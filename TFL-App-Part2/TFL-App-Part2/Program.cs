@@ -554,7 +554,7 @@ class Program
 
         //MENUS------------------------------------------------------------------
         int choice = 0;
-        Console.WriteLine("Welcome to the TfL tube walking route application!");
+        Console.WriteLine("Welcome to the TfL tube route application!");
 
         while (choice != 3)
         {
@@ -568,10 +568,10 @@ class Program
                 while (choice != 7)
                 {
                     Console.WriteLine("Please select one of the options below:");
-                    Console.WriteLine("1. List of impossible walking routes");
-                    Console.WriteLine("2. List of delayed walking routes");
-                    Console.WriteLine("3. Add walking time delays");
-                    Console.WriteLine("4. Remove walking time delays");
+                    Console.WriteLine("1. List of impossible routes");
+                    Console.WriteLine("2. List of delayed routes");
+                    Console.WriteLine("3. Add time delays");
+                    Console.WriteLine("4. Remove time delays");
                     Console.WriteLine("5. Set route is now impossible");
                     Console.WriteLine("6. Set route is now possible");
                     Console.WriteLine("7. Go Back");
@@ -721,7 +721,7 @@ class Program
                 while (choice != 3)
                 {
                     Console.WriteLine("Please select one of the options below:");
-                    Console.WriteLine("1. Find the fastest walking route");
+                    Console.WriteLine("1. Find the fastest route");
                     Console.WriteLine("2. Display Tube Information about a station");
                     Console.WriteLine("3. Go Back");
                     choice = Convert.ToInt32(Console.ReadLine());
