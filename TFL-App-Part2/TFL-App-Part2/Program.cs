@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 
 class Program
@@ -12,33 +13,26 @@ class Program
 
     private static string GetCommonLine(List<string> line1, List<string> line2)
     {
-        foreach (string station in line1)
-        {
-            if (line2.Contains(station))
-            {
-                return station;
-            }
-        }
-        return "";
+        return line1.Intersect(line2).FirstOrDefault();
     }
-    private static void PrintPath(int[] parent, int destination, List<string> stationNames, List<List<string>> stationLines, List<List<int>> minutesMatrix, List<List<int>> problemsMatrix)
+    private static void PrintPath(List<int> parent, int destination, List<string> stationNames, List<List<string>> stationLines, List<List<int>> minutesMatrix, List<List<int>> problemsMatrix)
     {
-        //build the path using a Stack (LIFO)
-        Stack<int> path = new Stack<int>();
+        int[] path = new int[parent.Count];
+        int pathIndex = 0;
         int current = destination;
 
         while (parent[current] != -1)
         {
-            path.Push(current);
+            path[pathIndex++] = current;
             current = parent[current];
         }
-
-        path.Push(current);
+        path[pathIndex] = current;
 
         int printCount = 1;
 
-        string nextStationName = stationNames[path.Peek()];
-        string commonLine = GetCommonLine(stationLines[current], stationLines[path.Peek()]);
+        int nextStationIndex = path[pathIndex - 1];
+        string nextStationName = stationNames[nextStationIndex];
+        string commonLine = GetCommonLine(stationLines[current], stationLines[nextStationIndex]);
         //Get Station Name at Index in List
         string stationName = stationNames[current];
 
@@ -53,42 +47,41 @@ class Program
         int minutesCount = 0;
 
         //Iterate through path
-        foreach (int stationIndex in path)
+        for (int i = pathIndex; i >= 0; i--, printCount++)
         {
+            int stationIndex = path[i];
             stationName = stationNames[stationIndex];
 
-            //Check for non-starting station
-            if (path.Count > 1 && stationIndex != path.Peek())
+            if (i > 0)
             {
-                int nextStationIndex = path.Pop();
+                nextStationIndex = path[i - 1];
                 nextStationName = stationNames[nextStationIndex];
                 commonLine = GetCommonLine(stationLines[stationIndex], stationLines[nextStationIndex]);
-                int minutes = minutesMatrix[stationIndex][nextStationIndex] + problemsMatrix[stationIndex][nextStationIndex];
+                int minutes = minutesMatrix[stationIndex][nextStationIndex] + +problemsMatrix[stationIndex][nextStationIndex];
                 minutesCount += minutes;
-
                 if (!commonLine.Equals(latestLine))
                 {
                     Console.WriteLine($"({printCount}) Change: {stationName} ({latestLine}) to {stationName} ({commonLine})");
                     latestLine = commonLine;
                     printCount++;
                 }
+
                 Console.WriteLine($"({printCount})      {stationName} ({commonLine}) to {nextStationName} ({commonLine})     {minutes} mins");
             }
             else
             {
                 Console.WriteLine($"({printCount}) End: {stationName} ({commonLine})");
             }
-            Console.WriteLine($"Total Journey Time: {minutesCount} minutes");
         }
-
+        Console.WriteLine($"Total Journey Time: {minutesCount} minutes");
     }
 
-    private static int GetClosestVertex(int[] distances, bool[] visited)
+    private static int GetClosestVertex(List<int> distances, List<bool> visited)
     {
         int minDistance = int.MaxValue;
         int minIndex = -1;
 
-        for (int v = 0; v < distances.Length; v++)
+        for (int v = 0; v < distances.Count; v++)
         {
             if (!visited[v] && distances[v] <= minDistance)
             {
@@ -102,22 +95,39 @@ class Program
 
     public static void Dijkstra(List<List<int>> minutesMatrix, List<List<int>> problemsMatrix, List<string> stationNames, List<List<string>> stationLines, int sourceStation, int destinationStation)
     {
-        int numVertices = 0;
-        foreach (var row in minutesMatrix)
+        // Ensure all Lists have the same number of elements (stations)
+        if (minutesMatrix.Count != problemsMatrix.Count || minutesMatrix.Count != stationNames.Count || stationNames.Count != stationLines.Count)
         {
-            numVertices++;
+            throw new ArgumentException("All input Lists must have the same number of elements (stations)");
         }
+        //Console.WriteLine($"minutesMatrix: {minutesMatrix.Count}, problemsMatrix: {problemsMatrix.Count}, stationNames: {stationNames.Count}, stationLines: {stationLines.Count}"); //Default: 63 by 63
 
-        int[] distances = new int[numVertices];
-        bool[] visited = new bool[numVertices];
-        int[] parent = new int[numVertices];
+        int numVertices = minutesMatrix.Count;
+        //Console.WriteLine(numVertices);
+
+        List<int> distances = new List<int>(numVertices);
+        for (int i = 0; i < numVertices; i++)
+        {
+            distances.Add(0); 
+        }
+        List<bool> visited = new List<bool>(numVertices);
+        for (int i = 0; i < numVertices; i++)
+        {
+            visited.Add(true);
+        }
+        List<int> parent = new List<int>(numVertices);
+        for (int i = 0; i < numVertices; i++)
+        {
+            parent.Add(0);
+        }
+        //Console.WriteLine(distances[0]);
 
         for (int i = 0; i < numVertices; i++)
         {
+            //Console.WriteLine(distances[i]);
             distances[i] = int.MaxValue;
             visited[i] = false;
             parent[i] = -1;
-            //Console.WriteLine($"distances[destinationStation]: {distances[destinationStation]}"); //Debug
         }
 
         distances[sourceStation] = 0;
@@ -129,20 +139,19 @@ class Program
 
             for (int v = 0; v < numVertices; v++)
             {
-                if (!visited[v] && minutesMatrix[u][v] != -1 && problemsMatrix[u][v] != -1 && (distances[u] + minutesMatrix[u][v] + problemsMatrix[u][v]) < distances[v])
+                // Handle potential uneven List lengths within a matrix
+                if (v < minutesMatrix[u].Count && minutesMatrix[u][v] != -1 && problemsMatrix[u][v] != -1 && (distances[u] + minutesMatrix[u][v] + problemsMatrix[u][v]) < distances[v])
                 {
                     distances[v] = distances[u] + minutesMatrix[u][v] + problemsMatrix[u][v];
                     parent[v] = u;
                 }
             }
         }
-        Console.WriteLine($"distances[destinationStation]: {distances[destinationStation]}"); //Debug
 
         Console.WriteLine($"Route: {stationNames[sourceStation]} to {stationNames[destinationStation]}");
 
         if (distances[destinationStation] == int.MaxValue)
         {
-            Console.WriteLine($"distances[destinationStation]: {distances[destinationStation]}"); //Debug
             Console.WriteLine("No path exists.");
         }
         else
@@ -159,25 +168,245 @@ class Program
             adjMatrix.Add(new List<int>(Enumerable.Repeat(-1, 63)));
         }
 
-        //Assign weights
-        adjMatrix[0][35] = 9;
-        adjMatrix[10][22] = 10;
-        adjMatrix[11][23] = 5;
-        adjMatrix[12][24] = 6;
-        adjMatrix[13][25] = 7;
-        adjMatrix[14][26] = 8;
-        adjMatrix[15][27] = 9;
-        adjMatrix[2][6] = 5;
-        adjMatrix[3][7] = 4;
-        adjMatrix[4][8] = 40;
-        adjMatrix[15][9] = 10;
-        adjMatrix[2][10] = 11;
-        adjMatrix[3][15] = 5;
-        adjMatrix[34][27] = 10;
-        adjMatrix[25][25] = 20;
-        adjMatrix[37][48] = 30;
-        adjMatrix[3][38] = 10;
 
+        //Assign weights new - based on ADJ Matrix excel spreadsheet across x axis (A,B,C,...)
+        //Aldgate (Circle, Metropolitan)
+        adjMatrix[0][34] = 2;
+        adjMatrix[0][57] = 1;
+        //Aldgate East (District, Hammersmith & City)
+        adjMatrix[1][34] = 2;
+        adjMatrix[1][57] = 2;
+        //Angel (Northern)
+        adjMatrix[2][29] = 2;
+        adjMatrix[2][42] = 2;
+        //Baker Street (Bakerloo, Circle, Hammersmith & City, Jubilee, Metropolitan)
+        adjMatrix[3][8] = 2;
+        adjMatrix[3][16] = 1;
+        adjMatrix[3][24] = 2;
+        adjMatrix[3][38] = 1;
+        adjMatrix[3][57] = 2;
+        //Bank (Central, Northern, Waterloo & City)
+        adjMatrix[4][34] = 10;
+        adjMatrix[4][35] = 2;
+        adjMatrix[4][40] = 2;
+        adjMatrix[4][54] = 2;
+        adjMatrix[4][61] = 5;
+        //Barbican (Circle, Hammersmith & City, Metropolitan)
+        adjMatrix[5][21] = 1;
+        adjMatrix[5][40] = 1;
+        //Bayswater (Circle, District)
+        adjMatrix[6][41] = 2;
+        adjMatrix[6][44] = 2;
+        //Blackfriars (Circle, District)
+        adjMatrix[7][36] = 1;
+        adjMatrix[7][55] = 1;
+        //Bond Street (Central, Jubilee)
+        adjMatrix[8][3] = 2;
+        adjMatrix[8][25] = 2;
+        adjMatrix[8][37] = 1;
+        adjMatrix[8][43] = 1;
+        //Borough (Northern)
+        adjMatrix[9][17] = 2;
+        adjMatrix[9][35] = 1;
+        //Cannon Street (Circle, District)
+        adjMatrix[10][36] = 1;
+        adjMatrix[10][39] = 1;
+        //Chancery Lane (Central)
+        adjMatrix[11][27] = 1;
+        adjMatrix[11][54] = 2;
+        //Charing Cross (Bakerloo, Northern)
+        adjMatrix[12][18] = 1;
+        adjMatrix[12][33] = 1;
+        adjMatrix[12][45] = 1;
+        //Covent Garden (Piccadilly)
+        adjMatrix[13][27] = 2;
+        adjMatrix[13][33] = 1;
+        //Earl's Court (District, Piccadilly)
+        adjMatrix[14][22] = 2;
+        adjMatrix[14][26] = 3;
+        //Edgware Road (Circle, District, Hammersmith & City)
+        adjMatrix[15][3] = 2;
+        adjMatrix[15][44] = 2;
+        //Edgware Road (Bakerloo)
+        adjMatrix[16][38] = 1;
+        adjMatrix[16][44] = 2;
+        //Elephant & Castle (Bakerloo, Northern)
+        adjMatrix[17][9] = 2;
+        adjMatrix[17][31] = 3;
+        //Embankment (Bakerloo, Circle, District, Northern)
+        adjMatrix[18][12] = 1;
+        adjMatrix[18][55] = 1;
+        adjMatrix[18][61] = 1;
+        adjMatrix[18][62] = 1;
+        //Euston (Northern, Victoria)
+        adjMatrix[19][29] = 1;
+        adjMatrix[19][60] = 1;
+        //Euston Square (Circle, Metropolitan, Hammersmith & City)
+        adjMatrix[20][24] = 1;
+        adjMatrix[20][29] = 2;
+        //Farringdon (Circle, Hammersmith & City, Metropolitan)
+        adjMatrix[21][5] = 1;
+        adjMatrix[21][29] = 3;
+        //Gloucester Road (Circle, District, Piccadilly)
+        adjMatrix[22][14] = 2;
+        adjMatrix[22][26] = 2;
+        adjMatrix[22][51] = 1;
+        //Goodge Street (Northern)
+        adjMatrix[23][56] = 1;
+        adjMatrix[23][60] = 1;
+        //Great Portland Street (Circle, Hammersmith & City, Metropolitan)
+        adjMatrix[24][3] = 2;
+        adjMatrix[24][20] = 1;
+        //Green Park (Jubilee, Piccadilly, Victoria)
+        adjMatrix[25][8] = 2;
+        adjMatrix[25][28] = 2;
+        adjMatrix[25][43] = 2;
+        adjMatrix[25][45] = 1;
+        adjMatrix[25][59] = 2;
+        adjMatrix[25][62] = 2;
+        //High Street Kensington (Circle, District)
+        adjMatrix[26][14] = 3;
+        adjMatrix[26][22] = 2;
+        adjMatrix[26][40] = 2;
+        //Holborn (Central, Piccadilly)
+        adjMatrix[27][11] = 1;
+        adjMatrix[27][13] = 1;
+        adjMatrix[27][49] = 1;
+        adjMatrix[27][56] = 2;
+        //Hyde Park Corner (Piccadilly)
+        adjMatrix[28][25] = 2;
+        adjMatrix[28][30] = 1;
+        //King's Cross St Pancras (Circle, Hammersmith & City, Metropolitan, Northern, Piccadilly, Victoria)
+        adjMatrix[29][2] = 2;
+        adjMatrix[29][19] = 1;
+        adjMatrix[29][20] = 2;
+        adjMatrix[29][21] = 3;
+        adjMatrix[29][49] = 2;
+        //Knightsbridge (Piccadilly)
+        adjMatrix[30][28] = 1;
+        adjMatrix[30][51] = 2;
+        //Lambeth North (Bakerloo)
+        adjMatrix[31][17] = 2;
+        adjMatrix[31][61] = 1;
+        //Lancaster Gate (Central)
+        adjMatrix[32][37] = 2;
+        adjMatrix[32][47] = 1;
+        //Leicester Square (Northern, Piccadilly)
+        adjMatrix[33][12] = 1;
+        adjMatrix[33][13] = 1;
+        adjMatrix[33][45] = 1;
+        adjMatrix[33][56] = 1;
+        //Liverpool Street (Central, Circle, Hammersmith & City, Metropolitan)
+        adjMatrix[34][0] = 2;
+        adjMatrix[34][1] = 2;
+        adjMatrix[34][4] = 2;
+        adjMatrix[34][40] = 1;
+        //London Bridge (Jubilee, Northern)
+        adjMatrix[35][4] = 2;
+        adjMatrix[35][9] = 1;
+        adjMatrix[35][52] = 2;
+        //Mansion House (Circle, District)
+        adjMatrix[36][7] = 2;
+        adjMatrix[36][10] = 1;
+        //Marble Arch (Central)
+        adjMatrix[37][8] = 1;
+        adjMatrix[37][32] = 2;
+        //Marylebone (Bakerloo)
+        adjMatrix[38][3] = 1;
+        adjMatrix[38][16] = 1;
+        //Monument (Circle, District)
+        adjMatrix[39][4] = 1;
+        adjMatrix[39][10] = 1;
+        //Moorgate (Circle, Hammersmith & City, Metropolitan, Northern)
+        adjMatrix[40][4] = 2;
+        adjMatrix[40][5] = 1;
+        adjMatrix[40][34] = 1;
+        adjMatrix[40][42] = 1;
+        //Notting Hill Gate (Central, Circle, District)
+        adjMatrix[41][6] = 1;
+        adjMatrix[41][26] = 2;
+        adjMatrix[41][47] = 1;
+        //Old Street (Northern)
+        adjMatrix[42][2] = 3;
+        adjMatrix[42][40] = 1;
+        //Oxford Circus (Bakerloo, Central, Victoria)
+        adjMatrix[43][8] = 1;
+        adjMatrix[43][25] = 2;
+        adjMatrix[43][45] = 2;
+        adjMatrix[43][48] = 2;
+        adjMatrix[43][56] = 1;
+        adjMatrix[43][60] = 2;
+        //Paddington (Bakerloo, Circle, District, Hammersmith & City)
+        adjMatrix[44][6] = 2;
+        adjMatrix[44][15] = 2;
+        adjMatrix[44][16] = 2;
+        //Piccadilly Circus(Bakerloo, Piccadilly)
+        adjMatrix[45][12] = 2;
+        adjMatrix[45][25] = 1;
+        adjMatrix[45][33] = 1;
+        adjMatrix[45][43] = 2;
+        //Pimlico(Victoria)
+        adjMatrix[46][58] = 1;
+        adjMatrix[46][59] = 2;
+        //Queensway (Central)
+        adjMatrix[47][32] = 2;
+        adjMatrix[47][41] = 1;
+        //Regent's Park (Bakerloo)
+        adjMatrix[48][3] = 2;
+        adjMatrix[48][43] = 2;
+        //Russell Square (Piccadilly)
+        adjMatrix[49][27] = 2;
+        adjMatrix[49][29] = 2;
+        //Sloane Square (Circle, District)
+        adjMatrix[50][51] = 2;
+        adjMatrix[50][59] = 2;
+        //South Kensington(Circle, District, Piccadilly)
+        adjMatrix[51][22] = 1;
+        adjMatrix[51][30] = 2;
+        adjMatrix[51][50] = 2;
+        //Southwark (Jubilee)
+        adjMatrix[52][35] = 2;
+        adjMatrix[52][61] = 1;
+        //St James's Park (Circle, District)
+        adjMatrix[53][59] = 1;
+        adjMatrix[53][62] = 2;
+        //St Paul's (Central)
+        adjMatrix[54][4] = 2;
+        adjMatrix[54][11] = 2;
+        //Temple (Circle, District)
+        adjMatrix[55][7] = 1;
+        adjMatrix[55][18] = 1;
+        //Tottenham Court Road(Central, Northern)
+        adjMatrix[56][23] = 1;
+        adjMatrix[56][27] = 1;
+        adjMatrix[56][33] = 1;
+        adjMatrix[56][43] = 1;
+        //Tower Hill (Circle, District)
+        adjMatrix[57][0] = 1;
+        adjMatrix[57][1] = 2;
+        adjMatrix[57][39] = 2;
+        //Vauxhall (Victoria)
+        adjMatrix[58][46] = 1;
+        //Victoria (Circle, District, Victoria)
+        adjMatrix[59][25] = 2;
+        adjMatrix[59][46] = 2;
+        adjMatrix[59][50] = 2;
+        adjMatrix[59][53] = 1;
+        //Warren Street (Northern, Victoria)
+        adjMatrix[60][19] = 1;
+        adjMatrix[60][23] = 1;
+        adjMatrix[60][43] = 2;
+        //Waterloo (Bakerloo, Jubilee, Northern, Waterloo & City)
+        adjMatrix[61][4] = 4;
+        adjMatrix[61][18] = 1;
+        adjMatrix[61][31] = 1;
+        adjMatrix[61][52] = 1;
+        adjMatrix[61][62] = 1;
+        //Westminster (Circle, District, Jubilee)
+        adjMatrix[62][18] = 1;
+        adjMatrix[62][25] = 2;
+        adjMatrix[62][53] = 2;
+        adjMatrix[62][61] = 1;
 
 
         //Problems Matrix
